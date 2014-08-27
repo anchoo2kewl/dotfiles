@@ -12,7 +12,7 @@ To install the dotfiles, simply clone the dotfiles repo and run `source ./bootst
 The `bootstrap.sh` script will copy all the files in the `public` and `private` directories to your home directory. Files in the `private` directory are also appended, see Private Config for more info.
 
 ```bash
-git clone https://github.com/Rowno/dotfiles.git && cd dotfiles && source ./bootstrap.sh
+git clone https://github.com/anchoo2kewl/dotfiles.git && cd dotfiles && source ./bootstrap.sh
 ```
 
 To update the dotfiles, just run `source ./bootstrap.sh` again.

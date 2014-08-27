@@ -3,6 +3,10 @@
 git pull
 git submodule update --init --recursive --quiet
 
+#Installing the Monaco Font
+curl -kL https://raw2.github.com/cstrap/monaco-font/master/install-font-ubuntu.sh | bash
+
+gconftool-2 --load terminal-color-scheme.xml
 function doIt() {
     rsync --exclude ".DS_Store" -avh ./public/ ~
     echo
