@@ -1,10 +1,3 @@
-#!/usr/bin/env bash
-
-function cheatsheet() {
-    # Exit if fits on screen, don't wrap, don't clear screen
-    cat ~/.dotfiles/cheatsheet | less -FSX
-}
-
 # Opens the current directory, otherwise opens the given file, directory or URL
 function o() {
     local parameter="$@"
@@ -20,19 +13,6 @@ function o() {
     fi
 }
 
-# Opens the current directory or project in Sublime, otherwise opens the given path.
-function s() {
-    if [ $# -eq 0 ]; then
-        if [ -f .sublime-project ]; then
-            (subl --project .sublime-project &> /dev/null &)
-        else
-            (subl . &> /dev/null &)
-        fi
-    else
-        (subl "$@" &> /dev/null &)
-    fi
-}
-
 # Simple calculator
 function calc() {
     local result=""
@@ -42,23 +22,28 @@ function calc() {
     if [[ "$result" == *.* ]]; then
         # improve the output for decimal numbers
         printf "$result" |
-        sed -e 's/^\./0./'        `# add "0" for cases like ".5"` \
-            -e 's/^-\./-0./'      `# add "0" for cases like "-.5"`\
-            -e 's/0*$//;s/\.$//'   # remove trailing zeros
+        # add "0" for cases like ".5"
+        # add "0" for cases like "-.5"
+        # remove trailing zeros
+        sed -e 's/^\./0./' \
+            -e 's/^-\./-0./' \
+            -e 's/0*$//;s/\.$//'
     else
         printf "$result"
     fi
-    printf "\n"
+}
+
+# Converts px to rem
+function rem() {
+    local result=$(calc "$1/16")
+    result="${result}rem"
+    printf $result
+    printf $result | pbcopy 2> /dev/null
 }
 
 # Create a new directory and enter it
 function mkd() {
-    mkdir -p "$@" && cd "$@"
-}
-
-# Copy w/ progress
-function cp_p() {
-    rsync -WavP --human-readable --progress $1 $2
+    mkdir -p "$@" && cd "$_";
 }
 
 # Determine size of a file or total size of a directory
@@ -72,16 +57,6 @@ function fs() {
         du $arg -- "$@"
     else
         du $arg .[^.]* *
-    fi
-}
-
-# Syntax highlight JSON strings or files
-# Usage: `json '{"foo":42}'` or `echo '{"foo":42}' | json`
-function json() {
-    if [ -t 0 ]; then # argument
-        python -mjson.tool <<< "$*" | pygmentize -l javascript
-    else # pipe
-        python -mjson.tool | pygmentize -l javascript
     fi
 }
 
@@ -149,21 +124,6 @@ function extract() {
     fi
 }
 
-# View HTTP traffic
-function sniff() {
-    sudo ngrep -d $1 -t '^(GET|POST) ' 'tcp and port 80';
-}
-
-function httpdump() {
-    sudo tcpdump -i $1 -n -s 0 -w - | grep -a -o -E "Host\: .*|GET \/.*";
-}
-
-# Test if HTTP compression (RFC 2616 + SDCH) is enabled for a given URL.
-# Send a fake UA string for sites that sniff it instead of using the Accept-Encoding header. (Looking at you, ajax.googleapis.com!)
-function httpgz() {
-    encoding="$(curl -LIs -H 'User-Agent: Mozilla/5 Gecko' -H 'Accept-Encoding: gzip,deflate,compress,sdch' "$1" | grep '^Content-Encoding:')" && echo "$1 is encoded using ${encoding#* }" || echo "$1 is not using any encoding"
-}
-
 # Get all the DNS records
 function dnsrecords() {
     dig +nocmd "$1" any +multiline +noall +answer
@@ -177,18 +137,10 @@ function server() {
     python -c $'import SimpleHTTPServer;\nmap = SimpleHTTPServer.SimpleHTTPRequestHandler.extensions_map;\nmap[""] = "text/plain";\nfor key, value in map.items():\n\tmap[key] = value + ";charset=UTF-8";\nSimpleHTTPServer.test();' "$port"
 }
 
-# Start a PHP server from a directory, optionally specifying the port
-# (Requires PHP 5.4.0+.)
-function phpserver() {
-    local port="${1:-4000}"
-    local ip=$(ipconfig getifaddr en1)
-    php -S "${ip}:${port}"
-}
-
 # Compare original and gzipped file size
 function gz() {
-    local origsize=$(wc -c < "$1")
-    local gzipsize=$(gzip -c "$1" | wc -c)
+    local origsize="$(wc -c < $1)"
+    local gzipsize="$(gzip -c $1 | wc -c)"
     local ratio=$(echo "$gzipsize * 100/ $origsize" | bc -l)
     printf "orig: %d bytes\n" "$origsize"
     printf "gzip: %d bytes (%2.2f%%)\n" "$gzipsize" "$ratio"

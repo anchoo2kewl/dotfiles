@@ -6,7 +6,7 @@
     # Treat spaces before tabs and all kinds of trailing whitespace as an error
     whitespace = space-before-tab,trailing-space
     # Edit commit messages in Sublime Text
-    editor = subl -w
+    editor = atom --wait
     excludesfile = ~/.dotfiles/gitignore-global
     # Make `git rebase` safer on OS X
     # More info: <http://www.git-tower.com/blog/make-git-rebase-safe-on-osx/>
@@ -22,6 +22,12 @@
 
 [push]
     default = simple
+    followTags = true
 
 [help]
     autocorrect = 1
+
+[filter "lfs"]
+    clean = git-lfs clean %f
+    smudge = git-lfs smudge %f
+    required = true
